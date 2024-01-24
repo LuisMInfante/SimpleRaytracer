@@ -20,9 +20,42 @@ public:
 			Render();
 		}
 
-		ImGui::SliderFloat("Red", &colorR, 0.0f, 1.0f);
-		ImGui::SliderFloat("Green", &colorG, 0.0f, 1.0f);
-		ImGui::SliderFloat("Blue", &colorB, 0.0f, 1.0f);
+		/* Color Picker For Sphere */
+		ImGui::Separator();
+		ImGui::Text("Color Picker");
+		ImGui::Separator();
+
+		if(ImGui::SliderFloat("Red", &m_colorR, 0.0f, 1.0f))
+		{
+			UpdateSphereColor();
+		}
+		if (ImGui::SliderFloat("Green", &m_colorG, 0.0f, 1.0f))
+		{
+			UpdateSphereColor();
+		}
+		if (ImGui::SliderFloat("Blue", &m_colorB, 0.0f, 1.0f))
+		{
+			UpdateSphereColor();
+		}
+
+		/* Light Source Movement */
+		ImGui::Separator();
+		ImGui::Text("Light Position");
+		ImGui::Separator();
+
+		if (ImGui::SliderFloat("Light X", &m_lightPosX, -1.0f, 1.0f))
+		{
+			UpdateLightPosition();
+		}
+		if(ImGui::SliderFloat("Light Y", &m_lightPosY, -1.0f, 1.0f))
+		{
+			UpdateLightPosition();
+		}
+		if (ImGui::SliderFloat("Light Z", &m_lightPosZ, -1.0f, 1.0f))
+		{
+			UpdateLightPosition();
+		}
+
 
 		ImGui::End();
 
@@ -46,7 +79,6 @@ public:
 		ImGui::PopStyleVar();
 
 		Render();
-		UpdateSphereColor();
 	}
 
 	void Render()
@@ -61,7 +93,12 @@ public:
 
 	void UpdateSphereColor() 
 	{
-		m_Renderer.ChangeSphereColor(colorR, colorG, colorB);
+		m_Renderer.ChangeSphereColor(m_colorR, m_colorG, m_colorB);
+	}
+
+	void UpdateLightPosition()
+	{
+		m_Renderer.ChangeLightPosition(m_lightPosX, m_lightPosY, m_lightPosZ);
 	}
 
 
@@ -72,10 +109,15 @@ private:
 
 	float m_LastRenderTime = 0.0f;
 
-	float colorR = 1.0f; 
-	float colorG = 1.0f; 
-	float colorB = 1.0f; 
+	// Color sliders
+	float m_colorR = 1.0f;
+	float m_colorG = 1.0f;
+	float m_colorB = 1.0f;
 
+	// Light source sliders
+	float m_lightPosX = -1.0f;
+	float m_lightPosY = -1.0f;
+	float m_lightPosZ = -1.0f;
 };
 
 Walnut::Application* Walnut::CreateApplication(int argc, char** argv)
