@@ -74,6 +74,11 @@ void Renderer::Render()
 	m_FinalImage->SetData(m_ImageData);
 }
 
+void Renderer::ChangeSphereColor(float colorR, float colorG, float colorB)
+{
+	SphereColor = { colorR, colorG, colorB };
+}
+
 glm::vec4 Renderer::UpdatePixel(glm::vec2 coordinate)
 {
 	// Scale coordinates to RBGA values
@@ -117,7 +122,10 @@ glm::vec4 Renderer::UpdatePixel(glm::vec2 coordinate)
 	// Calculate the intersection point
 	glm::vec3 hitPosition = CameraPosition + rayDirection * distance[0];
 	glm::vec3 normal = glm::normalize(hitPosition - sphereOrigin); 
-	float lightIntensity = glm::max(glm::dot(normal, -lightPosition), 0.0f); // Equiv to cos(theta) 
-	return (glm::vec4(glm::vec3(hitPosition), 1.0f) + 0.5f) * lightIntensity;
+	float lightIntensity = glm::max(glm::dot(normal, -lightPosition), 0.0f); // Equiv to cos(theta)
+	glm::vec3 litColor = SphereColor * lightIntensity;
+
+	return glm::vec4(litColor, 1.0f);
+
 
 }

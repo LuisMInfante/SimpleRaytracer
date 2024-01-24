@@ -19,6 +19,11 @@ public:
 		{
 			Render();
 		}
+
+		ImGui::SliderFloat("Red", &colorR, 0.0f, 1.0f);
+		ImGui::SliderFloat("Green", &colorG, 0.0f, 1.0f);
+		ImGui::SliderFloat("Blue", &colorB, 0.0f, 1.0f);
+
 		ImGui::End();
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -41,6 +46,7 @@ public:
 		ImGui::PopStyleVar();
 
 		Render();
+		UpdateSphereColor();
 	}
 
 	void Render()
@@ -53,12 +59,23 @@ public:
 		m_LastRenderTime = timer.ElapsedMillis();
 	}
 
+	void UpdateSphereColor() 
+	{
+		m_Renderer.ChangeSphereColor(colorR, colorG, colorB);
+	}
+
+
 private:
 	Renderer m_Renderer;
 	uint32_t* m_ImageData = nullptr;
 	uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 
 	float m_LastRenderTime = 0.0f;
+
+	float colorR = 1.0f; 
+	float colorG = 1.0f; 
+	float colorB = 1.0f; 
+
 };
 
 Walnut::Application* Walnut::CreateApplication(int argc, char** argv)
