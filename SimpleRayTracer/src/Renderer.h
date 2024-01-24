@@ -16,7 +16,8 @@ public:
 		std::shared_ptr<Walnut::Image> GetFinalImage() const { return m_FinalImage; }
 
 private:
-	uint32_t UpdatePixel(glm::vec2 coordinate);
+	glm::vec4 UpdatePixel(glm::vec2 coordinate);
+
 private:
 	std::shared_ptr<Walnut::Image> m_FinalImage;
 	uint32_t* m_ImageData = nullptr;
