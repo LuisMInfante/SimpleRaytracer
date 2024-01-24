@@ -39,6 +39,9 @@ void Renderer::Render()
 			glm::vec2 coordinate = { (float)x / (float)m_FinalImage->GetWidth() , (float)y / (float)m_FinalImage->GetHeight() };
 			coordinate = coordinate * 2.0f - 1.0f; // Scale to [-1, 1]
 
+			float aspectRatio = (float)m_FinalImage->GetWidth() / (float)m_FinalImage->GetHeight();
+			coordinate.x *= aspectRatio; // Scale the x coordinate by the aspect ratio
+
 			// Update the pixel at the coordinate 
 			m_ImageData[x + y * m_FinalImage->GetWidth()] = UpdatePixel(coordinate);
 		}
@@ -57,7 +60,7 @@ uint32_t Renderer::UpdatePixel(glm::vec2 coordinate)
 	float sphereRadius = 0.5f;
 
 	// Set the camera position
-	glm::vec3 CameraPosition(0.0f, 0.0f, 2.0f);
+	glm::vec3 CameraPosition(0.0f, 0.0f, 1.0f);
 
 	// Calculate the ray direction from the camera (-1 for forward)
 	glm::vec3 rayDirection(coordinate.x, coordinate.y, -1.0f);
