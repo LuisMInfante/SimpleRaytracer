@@ -1,5 +1,7 @@
 Simple Raytracing application in C++
 
+**<u>This is a work in progress</u>**
+
 # Getting Started
 Once you've cloned, run `scripts/Setup.bat` to generate Visual Studio 2022 solution/project files.
 
