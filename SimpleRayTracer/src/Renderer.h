@@ -2,8 +2,8 @@
 
 #include "Walnut/Image.h"
 
-#include "memory"
-#include "glm/glm.hpp"
+#include <memory>
+#include <glm/glm.hpp>
 
 class Renderer
 {
@@ -11,14 +11,14 @@ public:
 		Renderer() = default;
 
 		void OnResize(uint32_t width, uint32_t height);
-		void Render(const class Camera& camera);
+		void Render(const class Camera& camera, const class Scene& scene);
 		void ChangeSphereColor(float colorR, float colorG, float colorB);
 		void ChangeLightPosition(float lightPosX, float lightPosY, float lightPosZ);
 
 		std::shared_ptr<Walnut::Image> GetFinalImage() const { return m_FinalImage; }
 
 private:
-	glm::vec4 TraceRay(const class Ray& ray);
+	glm::vec4 TraceRay(const class Ray& ray, const class Scene& scene);
 
 private:
 	std::shared_ptr<Walnut::Image> m_FinalImage;

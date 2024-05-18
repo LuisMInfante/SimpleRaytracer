@@ -6,6 +6,9 @@
 
 #include "Renderer.h"
 #include "Camera.h"
+#include "Scene.h"
+
+#include <glm/gtc/type_ptr.hpp>
 
 using namespace Walnut;
 
@@ -13,7 +16,18 @@ class ExampleLayer : public Walnut::Layer
 {
 public:
 	ExampleLayer()
-		: m_Camera(45.0f, 0.1f, 100.0f) {}
+		: m_Camera(45.0f, 0.1f, 100.0f) 
+	{
+		Sphere sphere;
+		sphere.Position = { 0.0f, 0.0f, 0.0f };
+		sphere.Radius = 0.5f;
+		sphere.Albedo = { 1.0f, 0.0f, 0.0f };
+		m_Scene.Spheres.push_back(sphere);
+
+		Light light;
+		light.Position = { -1.0f, -1.0f, -1.0f };
+		m_Scene.Lights.push_back(light);
+	}
 
 	virtual void OnUpdate(float deltaTime) override
 	{
@@ -21,6 +35,7 @@ public:
 	}
 	virtual void OnUIRender() override
 	{
+		/* Settings */
 		ImGui::Begin("Settings");
 		ImGui::Text("Last render: %.3fms", m_LastRenderTime);
 		if (ImGui::Button("Render"))
@@ -28,42 +43,23 @@ public:
 			Render();
 		}
 
-		/* Color Picker For Sphere */
+		/* Scene Controls */
 		ImGui::Separator();
-		ImGui::Text("Color Picker");
+		ImGui::Text("Scene");
 		ImGui::Separator();
 
-		if(ImGui::SliderFloat("Red", &m_colorR, 0.0f, 1.0f))
-		{
-			UpdateSphereColor();
-		}
-		if (ImGui::SliderFloat("Green", &m_colorG, 0.0f, 1.0f))
-		{
-			UpdateSphereColor();
-		}
-		if (ImGui::SliderFloat("Blue", &m_colorB, 0.0f, 1.0f))
-		{
-			UpdateSphereColor();
-		}
+		ImGui::DragFloat3("Sphere Position", glm::value_ptr(m_Scene.Spheres[0].Position), 0.1f, -1.0f, 1.0f);
+		ImGui::DragFloat("Sphere Radius", &m_Scene.Spheres[0].Radius, 0.1f, 0.0f, 1.0f);
+
+		/* Color Picker For Sphere */
+		ImGui::ColorEdit3("Sphere Albedo", glm::value_ptr(m_Scene.Spheres[0].Albedo), 0.1f);
 
 		/* Light Source Movement */
 		ImGui::Separator();
 		ImGui::Text("Light Position");
 		ImGui::Separator();
 
-		if (ImGui::SliderFloat("Light X", &m_lightPosX, -1.0f, 1.0f))
-		{
-			UpdateLightPosition();
-		}
-		if(ImGui::SliderFloat("Light Y", &m_lightPosY, -1.0f, 1.0f))
-		{
-			UpdateLightPosition();
-		}
-		if (ImGui::SliderFloat("Light Z", &m_lightPosZ, -1.0f, 1.0f))
-		{
-			UpdateLightPosition();
-		}
-
+		ImGui::DragFloat3("Light Source", glm::value_ptr(m_Scene.Lights[0].Position), 0.1f, -1.0f, 1.0f);
 
 		ImGui::End();
 
@@ -95,7 +91,7 @@ public:
 
 		m_Renderer.OnResize(m_ViewportWidth, m_ViewportHeight);
 		m_Camera.OnResize(m_ViewportWidth, m_ViewportHeight);
-		m_Renderer.Render(m_Camera);
+		m_Renderer.Render(m_Camera, m_Scene);
 
 		m_LastRenderTime = timer.ElapsedMillis();
 	}
@@ -114,6 +110,7 @@ public:
 private:
 	Renderer m_Renderer;
 	Camera m_Camera;
+	Scene m_Scene;
 	uint32_t* m_ImageData = nullptr;
 	uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 

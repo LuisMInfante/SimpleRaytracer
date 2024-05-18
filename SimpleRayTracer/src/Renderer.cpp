@@ -1,6 +1,7 @@
 #include "Renderer.h"
 #include "Camera.h"
 #include "Ray.h"
+#include "Scene.h"
 
 #include "Walnut/Random.h"
 
@@ -47,7 +48,7 @@ void Renderer::OnResize(uint32_t width, uint32_t height)
 	m_ImageData = new uint32_t[width * height];
 }
 
-void Renderer::Render(const Camera& camera)
+void Renderer::Render(const Camera& camera, const Scene& scene)
 {
 	Ray ray;
 	ray.Origin = camera.GetPosition();
@@ -65,7 +66,7 @@ void Renderer::Render(const Camera& camera)
 			ray.Direction = camera.GetRayDirections()[x + y * m_FinalImage->GetWidth()];
 
 			// Update the pixel at the coordinate 
-			glm::vec4 color = TraceRay(ray);
+			glm::vec4 color = TraceRay(ray, scene);
 			color = glm::clamp(color, glm::vec4(0.0f), glm::vec4(1.0f)); // Clamp the color to the range [0, 1]
 			m_ImageData[x + y * m_FinalImage->GetWidth()] = Utility::ConvertToRGBA(color);
 		}
@@ -84,19 +85,28 @@ void Renderer::ChangeLightPosition(float lightPosX, float lightPosY, float light
 	LightPosition = { lightPosX, lightPosY, lightPosZ };
 }
 
-glm::vec4 Renderer::TraceRay(const Ray& ray)
+glm::vec4 Renderer::TraceRay(const Ray& ray, const Scene& scene)
 {
-	// Define the sphere
-	glm::vec3 sphereOrigin(0.0f, 0.0f, 0.0f);
-	float sphereRadius = 0.5f;
+	// No Sphere in scene
+	if (scene.Spheres.size() == 0)
+	{
+		return glm::vec4(0, 0, 0, 1);
+	}
 
-	// Define the light
-	glm::normalize(LightPosition);
+	// Define the sphere(s)
+	const Sphere& sphere = scene.Spheres[0];
+
+	// Define the light(s)
+	const Light& light = scene.Lights[0];
+	glm::normalize(light.Position);
+
+	// Calculate translated ray origin (based on Sphere Origin)
+	glm::vec3 origin = ray.Origin - sphere.Position;
 
 	// Calculate the ray distance from the camera to the sphere
 	float a = glm::dot(ray.Direction, ray.Direction);
-	float b = 2.0f * glm::dot(ray.Origin, ray.Direction);
-	float c = glm::dot(ray.Origin, ray.Origin) - sphereRadius * sphereRadius;
+	float b = 2.0f * glm::dot(origin, ray.Direction); 
+	float c = glm::dot(origin, origin) - sphere.Radius * sphere.Radius;
 
 	float discriminant = b * b - 4.0f * a * c;
 
@@ -110,10 +120,10 @@ glm::vec4 Renderer::TraceRay(const Ray& ray)
 	float distance[2] = {(-b - sqrt(discriminant)) / (2.0f * a), (-b + sqrt(discriminant)) / (2.0f * a)};
 
 	// Calculate the intersection point
-	glm::vec3 hitPosition = ray.Origin + ray.Direction * distance[0];
-	glm::vec3 normal = glm::normalize(hitPosition - sphereOrigin); 
-	float lightIntensity = glm::max(glm::dot(normal, -LightPosition), 0.0f); // Equiv to cos(theta)
-	glm::vec3 litColor = SphereColor * lightIntensity;
+	glm::vec3 hitPosition = origin + ray.Direction * distance[0];
+	glm::vec3 normal = glm::normalize(hitPosition - sphere.Position); 
+	float lightIntensity = glm::max(glm::dot(normal, -light.Position), 0.0f); // Equiv to cos(theta)
+	glm::vec3 litColor = sphere.Albedo * lightIntensity;
 
 	return glm::vec4(litColor, 1.0f);
 }
