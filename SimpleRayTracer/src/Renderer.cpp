@@ -93,37 +93,57 @@ glm::vec4 Renderer::TraceRay(const Ray& ray, const Scene& scene)
 		return glm::vec4(0, 0, 0, 1);
 	}
 
-	// Define the sphere(s)
-	const Sphere& sphere = scene.Spheres[0];
-
 	// Define the light(s)
 	const Light& light = scene.Lights[0];
 	glm::normalize(light.Position);
 
-	// Calculate translated ray origin (based on Sphere Origin)
-	glm::vec3 origin = ray.Origin - sphere.Position;
+	const Sphere* closestSphere = nullptr;
+	float closestDistance = std::numeric_limits<float>::max();
 
-	// Calculate the ray distance from the camera to the sphere
-	float a = glm::dot(ray.Direction, ray.Direction);
-	float b = 2.0f * glm::dot(origin, ray.Direction); 
-	float c = glm::dot(origin, origin) - sphere.Radius * sphere.Radius;
-
-	float discriminant = b * b - 4.0f * a * c;
-
-	// If the discriminant is negative, the ray does not intersect the sphere
-	if (discriminant < 0.0f)
+	// Loop through all the spheres in the scene
+	for (const Sphere& sphere : scene.Spheres)
 	{
-		return glm::vec4(0, 0, 0, 1);
+		// Calculate translated ray origin (based on Sphere Origin)
+		glm::vec3 origin = ray.Origin - sphere.Position;
+
+		// Calculate the ray distance from the camera to the sphere
+		float a = glm::dot(ray.Direction, ray.Direction);
+		float b = 2.0f * glm::dot(origin, ray.Direction); 
+		float c = glm::dot(origin, origin) - sphere.Radius * sphere.Radius;
+
+		float discriminant = b * b - 4.0f * a * c;
+
+		// If the discriminant is negative, the ray does not intersect the sphere
+		if (discriminant < 0.0f)
+		{
+			continue;
+		}
+
+		// Calculate the distance from the camera to the sphere
+		float distance[2] = {(-b - sqrt(discriminant)) / (2.0f * a), (-b + sqrt(discriminant)) / (2.0f * a)};
+
+		// Update the closest sphere
+		if (distance[0] < closestDistance)
+		{
+			closestDistance = distance[0];
+			closestSphere = &sphere;
+		}
 	}
 
-	// Calculate the distance from the camera to the sphere
-	float distance[2] = {(-b - sqrt(discriminant)) / (2.0f * a), (-b + sqrt(discriminant)) / (2.0f * a)};
+	// No sphere was hit
+	if (!closestSphere)
+	{
+		return glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	}
 
 	// Calculate the intersection point
-	glm::vec3 hitPosition = origin + ray.Direction * distance[0];
-	glm::vec3 normal = glm::normalize(hitPosition - sphere.Position); 
+	glm::vec3 origin = ray.Origin - closestSphere->Position;
+	glm::vec3 hitPosition = origin + ray.Direction * closestDistance;
+	glm::vec3 normal = glm::normalize(hitPosition - closestSphere->Position);
+
+	// Calculate the light intensity and color
 	float lightIntensity = glm::max(glm::dot(normal, -light.Position), 0.0f); // Equiv to cos(theta)
-	glm::vec3 litColor = sphere.Albedo * lightIntensity;
+	glm::vec3 litColor = closestSphere->Albedo * lightIntensity;
 
 	return glm::vec4(litColor, 1.0f);
 }

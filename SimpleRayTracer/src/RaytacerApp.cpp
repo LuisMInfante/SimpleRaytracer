@@ -24,6 +24,12 @@ public:
 		sphere.Albedo = { 1.0f, 0.0f, 0.0f };
 		m_Scene.Spheres.push_back(sphere);
 
+		Sphere sphere2;
+		sphere2.Position = { 0.5f, 1.0f, -5.0f };
+		sphere2.Radius = 1.0f;
+		sphere2.Albedo = { 0.0f, 1.0f, 0.0f };
+		m_Scene.Spheres.push_back(sphere2);
+
 		Light light;
 		light.Position = { -1.0f, -1.0f, -1.0f };
 		m_Scene.Lights.push_back(light);
@@ -47,12 +53,19 @@ public:
 		ImGui::Separator();
 		ImGui::Text("Scene");
 		ImGui::Separator();
+		for (size_t i = 0; i < m_Scene.Spheres.size(); i++)
+		{
+			ImGui::PushID(i);
+			/* Sphere Position and Radius */
+			ImGui::DragFloat3("Sphere Position", glm::value_ptr(m_Scene.Spheres[i].Position), 0.1f);
+			ImGui::DragFloat("Sphere Radius", &m_Scene.Spheres[i].Radius, 0.1f, 0.0f);
 
-		ImGui::DragFloat3("Sphere Position", glm::value_ptr(m_Scene.Spheres[0].Position), 0.1f, -1.0f, 1.0f);
-		ImGui::DragFloat("Sphere Radius", &m_Scene.Spheres[0].Radius, 0.1f, 0.0f, 1.0f);
+			/* Color Picker For Sphere */
+			ImGui::ColorEdit3("Sphere Albedo", glm::value_ptr(m_Scene.Spheres[i].Albedo), 0.1f);
 
-		/* Color Picker For Sphere */
-		ImGui::ColorEdit3("Sphere Albedo", glm::value_ptr(m_Scene.Spheres[0].Albedo), 0.1f);
+			ImGui::Separator();
+			ImGui::PopID();
+		}
 
 		/* Light Source Movement */
 		ImGui::Separator();
