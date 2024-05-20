@@ -99,7 +99,7 @@ glm::vec4 Renderer::RayGen(uint32_t x, uint32_t y)
 
 	glm::vec3 litColor = { 0.0f, 0.0f, 0.0f };
 	float multiplier = 1.0f;
-	int numBounces = 2;
+	int numBounces = 10;
 
 	for (int i = 0; i < numBounces; i++)
 	{
@@ -109,14 +109,14 @@ glm::vec4 Renderer::RayGen(uint32_t x, uint32_t y)
 		// If the ray did not hit anything, return background color
 		if (!hitEvent.Hit || hitEvent.HitDistance < 0)
 		{
-			glm::vec3 skyColor = { 0.0f, 0.0f, 0.0f };
+			glm::vec3 skyColor = { 0.6f, 0.7f, 0.9f };
 			litColor += skyColor * multiplier;
 			break;
 		}
 
 		// Define the closest sphere
 		const Sphere& sphere = m_CurrentScene->Spheres[hitEvent.HitObjectIndex];
-		glm::vec3 sphereColor = sphere.Albedo;
+		glm::vec3 sphereColor = sphere.Material.Albedo;
 
 		// Calculate the light intensity and color
 		float lightIntensity = glm::max(glm::dot(hitEvent.WorldNormal, -light.Position), 0.0f); // Equiv to cos(theta)
@@ -128,7 +128,7 @@ glm::vec4 Renderer::RayGen(uint32_t x, uint32_t y)
 
 		// Calculate the new ray direction
 		ray.Origin = hitEvent.WorldPosition + hitEvent.WorldNormal * 0.001f;
-		ray.Direction = glm::reflect(ray.Direction, hitEvent.WorldNormal);
+		ray.Direction = glm::reflect(ray.Direction, hitEvent.WorldNormal + sphere.Material.Roughness * Walnut::Random::Vec3(-0.5f, 0.5f));
 	}
 
 	return glm::vec4(litColor, 1.0f);

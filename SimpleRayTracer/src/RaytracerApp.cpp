@@ -21,13 +21,14 @@ public:
 		Sphere sphere;
 		sphere.Position = { 0.0f, 0.0f, 0.0f };
 		sphere.Radius = 0.5f;
-		sphere.Albedo = { 0.2f, 0.55f, 0.6f };
+		sphere.Material.Albedo = { 0.2f, 0.55f, 0.6f };
 		m_Scene.Spheres.push_back(sphere);
 
 		Sphere sphere2;
-		sphere2.Position = { 0.0f, -101.0f, 0.0f };
+		sphere2.Position = { 0.0f, -100.5f, 0.0f };
 		sphere2.Radius = 100.0f;
-		sphere2.Albedo = { 0.7f, 0.8f, 0.7f };
+		sphere2.Material.Albedo = { 0.1f, 0.1f, 0.1f };
+		sphere2.Material.Roughness = 0.001f;
 		m_Scene.Spheres.push_back(sphere2);
 
 		Light light;
@@ -57,11 +58,13 @@ public:
 		{
 			ImGui::PushID(i);
 			/* Sphere Position and Radius */
-			ImGui::DragFloat3("Sphere Position", glm::value_ptr(m_Scene.Spheres[i].Position), 0.1f);
-			ImGui::DragFloat("Sphere Radius", &m_Scene.Spheres[i].Radius, 0.1f, 0.0f);
+			ImGui::DragFloat3("Position", glm::value_ptr(m_Scene.Spheres[i].Position), 0.1f);
+			ImGui::DragFloat("Radius", &m_Scene.Spheres[i].Radius, 0.1f, 0.0f, 500.0f);
 
-			/* Color Picker For Sphere */
-			ImGui::ColorEdit3("Sphere Albedo", glm::value_ptr(m_Scene.Spheres[i].Albedo), 0.1f);
+			/* Material Properties For Sphere */
+			ImGui::ColorEdit3("Albedo", glm::value_ptr(m_Scene.Spheres[i].Material.Albedo), 0.1f);
+			ImGui::DragFloat("Roughness", &m_Scene.Spheres[i].Material.Roughness, 0.001f, 0.0f, 1.0f);
+			ImGui::DragFloat("Metallic", &m_Scene.Spheres[i].Material.Metallic, 0.001f, 0.0f, 1.0f);
 
 			ImGui::Separator();
 			ImGui::PopID();
