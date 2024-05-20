@@ -21,13 +21,13 @@ public:
 		Sphere sphere;
 		sphere.Position = { 0.0f, 0.0f, 0.0f };
 		sphere.Radius = 0.5f;
-		sphere.Albedo = { 1.0f, 0.0f, 0.0f };
+		sphere.Albedo = { 0.2f, 0.55f, 0.6f };
 		m_Scene.Spheres.push_back(sphere);
 
 		Sphere sphere2;
-		sphere2.Position = { 0.5f, 1.0f, -5.0f };
-		sphere2.Radius = 1.0f;
-		sphere2.Albedo = { 0.0f, 1.0f, 0.0f };
+		sphere2.Position = { 0.0f, -101.0f, 0.0f };
+		sphere2.Radius = 100.0f;
+		sphere2.Albedo = { 0.7f, 0.8f, 0.7f };
 		m_Scene.Spheres.push_back(sphere2);
 
 		Light light;

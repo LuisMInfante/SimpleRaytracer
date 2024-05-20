@@ -93,25 +93,43 @@ glm::vec4 Renderer::RayGen(uint32_t x, uint32_t y)
 	ray.Origin = m_CurrentCamera->GetPosition();
 	ray.Direction = m_CurrentCamera->GetRayDirections()[x + y * m_FinalImage->GetWidth()];
 
-	// Trace the ray
-	Renderer::HitEvent hitEvent = TraceRay(ray);
-
-	// If the ray did not hit anything, return background color
-	if (!hitEvent.Hit || hitEvent.HitDistance < 0)
-	{
-		return glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	}
-
 	// Define the light(s)
 	const Light& light = m_CurrentScene->Lights[0];
 	glm::normalize(light.Position);
 
-	// Define the closest sphere
-	const Sphere& sphere = m_CurrentScene->Spheres[hitEvent.HitObjectIndex];
+	glm::vec3 litColor = { 0.0f, 0.0f, 0.0f };
+	float multiplier = 1.0f;
+	int numBounces = 2;
 
-	// Calculate the light intensity and color
-	float lightIntensity = glm::max(glm::dot(hitEvent.WorldNormal, -light.Position), 0.0f); // Equiv to cos(theta)
-	glm::vec3 litColor = sphere.Albedo * lightIntensity;
+	for (int i = 0; i < numBounces; i++)
+	{
+		// Trace the ray
+		Renderer::HitEvent hitEvent = TraceRay(ray);
+
+		// If the ray did not hit anything, return background color
+		if (!hitEvent.Hit || hitEvent.HitDistance < 0)
+		{
+			glm::vec3 skyColor = { 0.0f, 0.0f, 0.0f };
+			litColor += skyColor * multiplier;
+			break;
+		}
+
+		// Define the closest sphere
+		const Sphere& sphere = m_CurrentScene->Spheres[hitEvent.HitObjectIndex];
+		glm::vec3 sphereColor = sphere.Albedo;
+
+		// Calculate the light intensity and color
+		float lightIntensity = glm::max(glm::dot(hitEvent.WorldNormal, -light.Position), 0.0f); // Equiv to cos(theta)
+		sphereColor *= lightIntensity;
+		litColor += sphereColor * multiplier;
+
+		// Reduce multiplier for each bounce
+		multiplier *= 0.5f;
+
+		// Calculate the new ray direction
+		ray.Origin = hitEvent.WorldPosition + hitEvent.WorldNormal * 0.001f;
+		ray.Direction = glm::reflect(ray.Direction, hitEvent.WorldNormal);
+	}
 
 	return glm::vec4(litColor, 1.0f);
 }
@@ -152,7 +170,7 @@ Renderer::HitEvent Renderer::TraceRay(const Ray& ray)
 		float distance[2] = {(-b - sqrt(discriminant)) / (2.0f * a), (-b + sqrt(discriminant)) / (2.0f * a)};
 
 		// Update the closest sphere
-		if (distance[0] < closestDistance)
+		if (distance[0] > 0.0f && distance[0] < closestDistance)
 		{
 			closestDistance = distance[0];
 			closestSphere = i;
