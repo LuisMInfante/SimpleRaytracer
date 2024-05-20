@@ -97,7 +97,7 @@ glm::vec4 Renderer::RayGen(uint32_t x, uint32_t y)
 	Renderer::HitEvent hitEvent = TraceRay(ray);
 
 	// If the ray did not hit anything, return background color
-	if (!hitEvent.Hit)
+	if (!hitEvent.Hit || hitEvent.HitDistance < 0)
 	{
 		return glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	}
@@ -196,5 +196,6 @@ Renderer::HitEvent Renderer::Miss(const class Ray& ray)
 {
 	Renderer::HitEvent hitEvent;
 	hitEvent.Hit = false; // No hit (to be safe)
+	hitEvent.HitDistance = -1.0f; // No hit distance
 	return hitEvent;
 }
