@@ -72,7 +72,7 @@ public:
 		ImGui::Text("Light Position");
 		ImGui::Separator();
 
-		ImGui::DragFloat3("Light Source", glm::value_ptr(m_Scene.Lights[0].Position), 0.1f, -1.0f, 1.0f);
+		ImGui::DragFloat3("Light Source", glm::value_ptr(m_Scene.Lights[0].Position), 0.1f, -5.0f, 5.0f);
 
 		ImGui::End();
 

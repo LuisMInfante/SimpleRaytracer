@@ -18,11 +18,25 @@ public:
 		std::shared_ptr<Walnut::Image> GetFinalImage() const { return m_FinalImage; }
 
 private:
-	glm::vec4 TraceRay(const class Ray& ray, const class Scene& scene);
+	struct HitEvent
+	{
+		bool Hit = false;
+		uint32_t HitObjectIndex;
+		float HitDistance;
+		glm::vec3 WorldPosition;
+		glm::vec3 WorldNormal;
+	};
+
+	glm::vec4 RayGen(uint32_t x, uint32_t y);
+	HitEvent TraceRay(const class Ray& ray);
+	HitEvent ClosestHit(const class Ray& ray, uint32_t objectIndex, float hitDistance);
+	HitEvent Miss(const class Ray& ray);
 
 private:
 	std::shared_ptr<Walnut::Image> m_FinalImage;
 	uint32_t* m_ImageData = nullptr;
+	const Scene* m_CurrentScene = nullptr;
+	const Camera* m_CurrentCamera = nullptr;
 
 	float m_SphereR = 1.0f;
 	float m_SphereG = 1.0f;

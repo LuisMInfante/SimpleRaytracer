@@ -50,8 +50,8 @@ void Renderer::OnResize(uint32_t width, uint32_t height)
 
 void Renderer::Render(const Camera& camera, const Scene& scene)
 {
-	Ray ray;
-	ray.Origin = camera.GetPosition();
+	m_CurrentScene = &scene;
+	m_CurrentCamera = &camera;
 
 	/*
 		* More efficient by rendering horizontally instead of vertically
@@ -63,10 +63,11 @@ void Renderer::Render(const Camera& camera, const Scene& scene)
 	{
 		for (uint32_t x = 0; x < m_FinalImage->GetWidth(); x++)
 		{ 
-			ray.Direction = camera.GetRayDirections()[x + y * m_FinalImage->GetWidth()];
+			// Calculate the color of the pixel at the coordinate
+			// RayGen(x, y);
 
 			// Update the pixel at the coordinate 
-			glm::vec4 color = TraceRay(ray, scene);
+			glm::vec4 color = RayGen(x, y);
 			color = glm::clamp(color, glm::vec4(0.0f), glm::vec4(1.0f)); // Clamp the color to the range [0, 1]
 			m_ImageData[x + y * m_FinalImage->GetWidth()] = Utility::ConvertToRGBA(color);
 		}
@@ -85,24 +86,52 @@ void Renderer::ChangeLightPosition(float lightPosX, float lightPosY, float light
 	LightPosition = { lightPosX, lightPosY, lightPosZ };
 }
 
-glm::vec4 Renderer::TraceRay(const Ray& ray, const Scene& scene)
+glm::vec4 Renderer::RayGen(uint32_t x, uint32_t y)
 {
-	// No Sphere in scene
-	if (scene.Spheres.size() == 0)
+	// Define the ray
+	Ray ray;
+	ray.Origin = m_CurrentCamera->GetPosition();
+	ray.Direction = m_CurrentCamera->GetRayDirections()[x + y * m_FinalImage->GetWidth()];
+
+	// Trace the ray
+	Renderer::HitEvent hitEvent = TraceRay(ray);
+
+	// If the ray did not hit anything, return background color
+	if (!hitEvent.Hit)
 	{
-		return glm::vec4(0, 0, 0, 1);
+		return glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	}
 
 	// Define the light(s)
-	const Light& light = scene.Lights[0];
+	const Light& light = m_CurrentScene->Lights[0];
 	glm::normalize(light.Position);
 
-	const Sphere* closestSphere = nullptr;
+	// Define the closest sphere
+	const Sphere& sphere = m_CurrentScene->Spheres[hitEvent.HitObjectIndex];
+
+	// Calculate the light intensity and color
+	float lightIntensity = glm::max(glm::dot(hitEvent.WorldNormal, -light.Position), 0.0f); // Equiv to cos(theta)
+	glm::vec3 litColor = sphere.Albedo * lightIntensity;
+
+	return glm::vec4(litColor, 1.0f);
+}
+
+Renderer::HitEvent Renderer::TraceRay(const Ray& ray)
+{
+	// No Sphere in scene
+	if (m_CurrentScene->Spheres.size() == 0)
+	{
+		return Miss(ray);
+	}
+
+	uint32_t closestSphere = std::numeric_limits<uint32_t>::max();
 	float closestDistance = std::numeric_limits<float>::max();
 
 	// Loop through all the spheres in the scene
-	for (const Sphere& sphere : scene.Spheres)
+	for (size_t i = 0; i < m_CurrentScene->Spheres.size(); i++)
 	{
+		const Sphere& sphere = m_CurrentScene->Spheres[i];
+
 		// Calculate translated ray origin (based on Sphere Origin)
 		glm::vec3 origin = ray.Origin - sphere.Position;
 
@@ -126,24 +155,46 @@ glm::vec4 Renderer::TraceRay(const Ray& ray, const Scene& scene)
 		if (distance[0] < closestDistance)
 		{
 			closestDistance = distance[0];
-			closestSphere = &sphere;
+			closestSphere = i;
 		}
 	}
 
 	// No sphere was hit
-	if (!closestSphere)
+	if (closestSphere == std::numeric_limits<uint32_t>::max())
 	{
-		return glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+		return Miss(ray);
 	}
 
+	return ClosestHit(ray, closestSphere, closestDistance);
+}
+
+
+Renderer::HitEvent Renderer::ClosestHit(const class Ray& ray, uint32_t objectIndex, float hitDistance)
+{
+	// Create a hit event
+	Renderer::HitEvent hitEvent;
+	hitEvent.Hit = true;
+	hitEvent.HitObjectIndex = objectIndex;
+	hitEvent.HitDistance = hitDistance;
+
+	// Get the closest sphere
+	const Sphere& closestSphere = m_CurrentScene->Spheres[objectIndex];
+
 	// Calculate the intersection point
-	glm::vec3 origin = ray.Origin - closestSphere->Position;
-	glm::vec3 hitPosition = origin + ray.Direction * closestDistance;
-	glm::vec3 normal = glm::normalize(hitPosition - closestSphere->Position);
+	glm::vec3 origin = ray.Origin - closestSphere.Position; // Translate to sphere space
+	hitEvent.WorldPosition = origin + ray.Direction * hitDistance;
+	hitEvent.WorldNormal = glm::normalize(hitEvent.WorldPosition);
 
-	// Calculate the light intensity and color
-	float lightIntensity = glm::max(glm::dot(normal, -light.Position), 0.0f); // Equiv to cos(theta)
-	glm::vec3 litColor = closestSphere->Albedo * lightIntensity;
+	// Translate back to world space
+	hitEvent.WorldPosition += closestSphere.Position;
 
-	return glm::vec4(litColor, 1.0f);
+	// Return the hit event
+	return hitEvent;
+}
+
+Renderer::HitEvent Renderer::Miss(const class Ray& ray)
+{
+	Renderer::HitEvent hitEvent;
+	hitEvent.Hit = false; // No hit (to be safe)
+	return hitEvent;
 }
