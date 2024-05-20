@@ -18,17 +18,24 @@ public:
 	ExampleLayer()
 		: m_Camera(45.0f, 0.1f, 100.0f) 
 	{
+		Material& floatingSphere = m_Scene.Materials.emplace_back();
+		floatingSphere.Albedo = { 0.2f, 0.55f, 0.6f };
+		floatingSphere.Roughness = 0.0f;
+
+		Material& ground = m_Scene.Materials.emplace_back();
+		ground.Albedo = { 0.1f, 0.1f, 0.1f };
+		ground.Roughness = 0.1f;
+
 		Sphere sphere;
 		sphere.Position = { 0.0f, 0.0f, 0.0f };
 		sphere.Radius = 0.5f;
-		sphere.Material.Albedo = { 0.2f, 0.55f, 0.6f };
+		sphere.MaterialIndex = 0;
 		m_Scene.Spheres.push_back(sphere);
 
 		Sphere sphere2;
 		sphere2.Position = { 0.0f, -100.5f, 0.0f };
 		sphere2.Radius = 100.0f;
-		sphere2.Material.Albedo = { 0.1f, 0.1f, 0.1f };
-		sphere2.Material.Roughness = 0.001f;
+		sphere2.MaterialIndex = 1;
 		m_Scene.Spheres.push_back(sphere2);
 
 		Light light;
@@ -52,7 +59,11 @@ public:
 
 		/* Scene Controls */
 		ImGui::Separator();
-		ImGui::Text("Scene");
+		ImGui::Text("Scene Controls");
+		ImGui::Separator();
+
+		/* Object Controls */
+		ImGui::Text("Objects");
 		ImGui::Separator();
 		for (size_t i = 0; i < m_Scene.Spheres.size(); i++)
 		{
@@ -61,10 +72,24 @@ public:
 			ImGui::DragFloat3("Position", glm::value_ptr(m_Scene.Spheres[i].Position), 0.1f);
 			ImGui::DragFloat("Radius", &m_Scene.Spheres[i].Radius, 0.1f, 0.0f, 500.0f);
 
-			/* Material Properties For Sphere */
-			ImGui::ColorEdit3("Albedo", glm::value_ptr(m_Scene.Spheres[i].Material.Albedo), 0.1f);
-			ImGui::DragFloat("Roughness", &m_Scene.Spheres[i].Material.Roughness, 0.001f, 0.0f, 1.0f);
-			ImGui::DragFloat("Metallic", &m_Scene.Spheres[i].Material.Metallic, 0.001f, 0.0f, 1.0f);
+			/* Material Index */
+			ImGui::DragInt("Material Select", &m_Scene.Spheres[i].MaterialIndex, 1.0f, 0.0f, (int)m_Scene.Materials.size() - 1);
+
+			ImGui::Separator();
+			ImGui::PopID();
+		}
+
+		/* Material Controls */
+		ImGui::Text("Materials");
+		ImGui::Separator();
+		for (size_t i = 0; i < m_Scene.Materials.size(); i++)
+		{
+			ImGui::PushID(i);
+
+			/* Material Properties */
+			ImGui::ColorEdit3("Albedo", glm::value_ptr(m_Scene.Materials[i].Albedo), 0.1f);
+			ImGui::DragFloat("Roughness", &m_Scene.Materials[i].Roughness, 0.001f, 0.0f, 1.0f);
+			ImGui::DragFloat("Metallic", &m_Scene.Materials[i].Metallic, 0.001f, 0.0f, 1.0f);
 
 			ImGui::Separator();
 			ImGui::PopID();

@@ -6,11 +6,13 @@
 typedef struct Sphere Sphere;
 typedef struct Scene Scene;
 typedef struct Light Light;
+typedef struct Material Material;
 
 struct Scene
 {
 	std::vector<Sphere> Spheres;
 	std::vector<Light> Lights;
+	std::vector<Material> Materials;
 };
 
 struct Material
@@ -25,7 +27,7 @@ struct Sphere
 	glm::vec3 Position{ 0.0f, 0.0f, 0.0f };
 	float Radius = 0.5f;
 
-	Material Material;
+	int MaterialIndex;
 };
 
 struct Light

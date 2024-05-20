@@ -116,7 +116,8 @@ glm::vec4 Renderer::RayGen(uint32_t x, uint32_t y)
 
 		// Define the closest sphere
 		const Sphere& sphere = m_CurrentScene->Spheres[hitEvent.HitObjectIndex];
-		glm::vec3 sphereColor = sphere.Material.Albedo;
+		const Material& material = m_CurrentScene->Materials[sphere.MaterialIndex];
+		glm::vec3 sphereColor = material.Albedo;
 
 		// Calculate the light intensity and color
 		float lightIntensity = glm::max(glm::dot(hitEvent.WorldNormal, -light.Position), 0.0f); // Equiv to cos(theta)
@@ -128,7 +129,7 @@ glm::vec4 Renderer::RayGen(uint32_t x, uint32_t y)
 
 		// Calculate the new ray direction
 		ray.Origin = hitEvent.WorldPosition + hitEvent.WorldNormal * 0.001f;
-		ray.Direction = glm::reflect(ray.Direction, hitEvent.WorldNormal + sphere.Material.Roughness * Walnut::Random::Vec3(-0.5f, 0.5f));
+		ray.Direction = glm::reflect(ray.Direction, hitEvent.WorldNormal + material.Roughness * Walnut::Random::Vec3(-0.5f, 0.5f));
 	}
 
 	return glm::vec4(litColor, 1.0f);
