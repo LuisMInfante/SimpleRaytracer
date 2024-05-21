@@ -6,7 +6,7 @@ Simple Raytracing application in C++
 Once you've cloned, run `scripts/Setup.bat` to generate Visual Studio 2022 solution/project files.
 
 # Controls
-Edit the Sphere Color and Light Positions with sliders on the left. <br>
+Edit the Sphere/Material Properties and Light Positions with sliders on the right. <br>
 Hold `Right Click` to control Camera.
 | Key | Response|
 |----------|----------|
