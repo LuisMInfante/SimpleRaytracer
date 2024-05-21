@@ -46,12 +46,21 @@ void Renderer::OnResize(uint32_t width, uint32_t height)
 	// Delete the old image data and allocate new memory
 	delete[] m_ImageData;
 	m_ImageData = new uint32_t[width * height];
+
+	// Delete the old accumulation buffer and allocate new memory
+	delete[] m_AccumulationBuffer;
+	m_AccumulationBuffer = new glm::vec4[width * height];
 }
 
 void Renderer::Render(const Camera& camera, const Scene& scene)
 {
 	m_CurrentScene = &scene;
 	m_CurrentCamera = &camera;
+
+	if (m_FrameCount == 1)
+	{
+		memset(m_AccumulationBuffer, 0, m_FinalImage->GetWidth() * m_FinalImage->GetHeight() * sizeof(glm::vec4));
+	}
 
 	/*
 		* More efficient by rendering horizontally instead of vertically
@@ -63,17 +72,30 @@ void Renderer::Render(const Camera& camera, const Scene& scene)
 	{
 		for (uint32_t x = 0; x < m_FinalImage->GetWidth(); x++)
 		{ 
-			// Calculate the color of the pixel at the coordinate
-			// RayGen(x, y);
-
-			// Update the pixel at the coordinate 
+			// Calculate the color of the pixel at the coordinate and Update
 			glm::vec4 color = RayGen(x, y);
-			color = glm::clamp(color, glm::vec4(0.0f), glm::vec4(1.0f)); // Clamp the color to the range [0, 1]
-			m_ImageData[x + y * m_FinalImage->GetWidth()] = Utility::ConvertToRGBA(color);
+			m_AccumulationBuffer[x + y * m_FinalImage->GetWidth()] += color;
+
+			glm::vec4 finalColor = m_AccumulationBuffer[x + y * m_FinalImage->GetWidth()];
+			finalColor /= (float)m_FrameCount;
+
+			finalColor = glm::clamp(finalColor, glm::vec4(0.0f), glm::vec4(1.0f)); // Clamp the color to the range [0, 1]
+			m_ImageData[x + y * m_FinalImage->GetWidth()] = Utility::ConvertToRGBA(finalColor);
 		}
 	}
 
 	m_FinalImage->SetData(m_ImageData);
+
+	if (m_Settings.Accumulate)
+	{
+		// Increment the frame count
+		m_FrameCount++;
+	}
+	else
+	{
+		// Reset the frame count
+		m_FrameCount = 1;
+	}
 }
 
 void Renderer::ChangeSphereColor(float colorR, float colorG, float colorB)

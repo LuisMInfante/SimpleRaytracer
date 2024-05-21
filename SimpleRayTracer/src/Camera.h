@@ -8,7 +8,7 @@ class Camera
 public:
 	Camera(float verticalFOV, float nearClip, float farClip);
 
-	void OnUpdate(float deltaTime);
+	bool OnUpdate(float deltaTime);
 	void OnResize(uint32_t width, uint32_t height);
 
 private:

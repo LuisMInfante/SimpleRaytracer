@@ -45,7 +45,10 @@ public:
 
 	virtual void OnUpdate(float deltaTime) override
 	{
-		m_Camera.OnUpdate(deltaTime);
+		if (m_Camera.OnUpdate(deltaTime))
+		{
+			m_Renderer.ResetFrameCount();
+		}
 	}
 	virtual void OnUIRender() override
 	{
@@ -55,6 +58,14 @@ public:
 		if (ImGui::Button("Render"))
 		{
 			Render();
+		}
+
+		/* Accumulation */
+		ImGui::Checkbox("Accumulate", &m_Renderer.GetSettings().Accumulate);
+
+		if (ImGui::Button("Reset"))
+		{
+			m_Renderer.ResetFrameCount();
 		}
 
 		/* Scene Controls */

@@ -5,6 +5,8 @@
 #include <memory>
 #include <glm/glm.hpp>
 
+typedef struct Settings Settings;
+
 class Renderer
 {
 public:
@@ -16,6 +18,13 @@ public:
 		void ChangeLightPosition(float lightPosX, float lightPosY, float lightPosZ);
 
 		std::shared_ptr<Walnut::Image> GetFinalImage() const { return m_FinalImage; }
+		void ResetFrameCount() { m_FrameCount = 1; }
+
+		struct Settings
+		{
+			bool Accumulate = true;
+		};
+		Settings& GetSettings() { return m_Settings; }
 
 private:
 	struct HitEvent
@@ -35,6 +44,11 @@ private:
 private:
 	std::shared_ptr<Walnut::Image> m_FinalImage;
 	uint32_t* m_ImageData = nullptr;
+	glm::vec4* m_AccumulationBuffer = nullptr;
+	uint32_t m_FrameCount = 1;
+
+	Settings m_Settings;
+
 	const Scene* m_CurrentScene = nullptr;
 	const Camera* m_CurrentCamera = nullptr;
 
