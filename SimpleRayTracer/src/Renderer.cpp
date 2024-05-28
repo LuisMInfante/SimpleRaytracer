@@ -5,6 +5,9 @@
 
 #include "Walnut/Random.h"
 
+#include <execution>
+#include <chrono>
+
 namespace Utility
 {
 	static uint32_t ConvertToRGBA(const glm::vec4& color)
@@ -50,6 +53,18 @@ void Renderer::OnResize(uint32_t width, uint32_t height)
 	// Delete the old accumulation buffer and allocate new memory
 	delete[] m_AccumulationBuffer;
 	m_AccumulationBuffer = new glm::vec4[width * height];
+
+	m_HorizontalPixelIterator.resize(width);
+	for (uint32_t i = 0; i < width; i++)
+	{
+		m_HorizontalPixelIterator[i] = i;
+	}
+
+	m_VerticalPixelIterator.resize(height);
+	for (uint32_t i = 0; i < height; i++)
+	{
+		m_VerticalPixelIterator[i] = i;
+	}
 }
 
 void Renderer::Render(const Camera& camera, const Scene& scene)
@@ -67,6 +82,28 @@ void Renderer::Render(const Camera& camera, const Scene& scene)
 		* by accessing contiguous memory
 		* also by potential cache hits
 	*/
+	
+#define MT_RENDER 1
+#if MT_RENDER
+
+	// Parallelize the rendering process
+	std::for_each(std::execution::par, m_VerticalPixelIterator.begin(), m_VerticalPixelIterator.end(), [this](uint32_t y)
+		{
+			std::for_each(std::execution::par, m_HorizontalPixelIterator.begin(), m_HorizontalPixelIterator.end(), [this, y](uint32_t x)
+				{
+					// Calculate the color of the pixel at the coordinate and Update
+					glm::vec4 color = RayGen(x, y);
+					m_AccumulationBuffer[x + y * m_FinalImage->GetWidth()] += color;
+
+					glm::vec4 finalColor = m_AccumulationBuffer[x + y * m_FinalImage->GetWidth()];
+					finalColor /= (float)m_FrameCount;
+
+					finalColor = glm::clamp(finalColor, glm::vec4(0.0f), glm::vec4(1.0f)); // Clamp the color to the range [0, 1]
+					m_ImageData[x + y * m_FinalImage->GetWidth()] = Utility::ConvertToRGBA(finalColor);
+				});
+		});
+
+#else
 
 	for (uint32_t y = 0; y < m_FinalImage->GetHeight(); y++)
 	{
@@ -83,6 +120,8 @@ void Renderer::Render(const Camera& camera, const Scene& scene)
 			m_ImageData[x + y * m_FinalImage->GetWidth()] = Utility::ConvertToRGBA(finalColor);
 		}
 	}
+
+#endif
 
 	m_FinalImage->SetData(m_ImageData);
 

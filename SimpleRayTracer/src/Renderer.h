@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <glm/glm.hpp>
+#include <vector>
 
 typedef struct Settings Settings;
 
@@ -46,6 +47,9 @@ private:
 	uint32_t* m_ImageData = nullptr;
 	glm::vec4* m_AccumulationBuffer = nullptr;
 	uint32_t m_FrameCount = 1;
+
+	std::vector<uint32_t> m_HorizontalPixelIterator;
+	std::vector<uint32_t> m_VerticalPixelIterator;
 
 	Settings m_Settings;
 
