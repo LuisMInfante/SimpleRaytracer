@@ -18,25 +18,57 @@ public:
 	ExampleLayer()
 		: m_Camera(45.0f, 0.1f, 100.0f) 
 	{
-		Material& floatingSphere = m_Scene.Materials.emplace_back();
-		floatingSphere.Albedo = { 0.2f, 0.55f, 0.6f };
-		floatingSphere.Roughness = 0.0f;
-
 		Material& ground = m_Scene.Materials.emplace_back();
 		ground.Albedo = { 0.1f, 0.1f, 0.1f };
 		ground.Roughness = 0.1f;
 
+		Material& floatingSphere = m_Scene.Materials.emplace_back();
+		floatingSphere.Albedo = { 0.2f, 0.55f, 0.6f };
+		floatingSphere.Roughness = 0.0f;
+
+		Material& EmissiveSphere = m_Scene.Materials.emplace_back();
+		EmissiveSphere.Albedo = { 0.9f, 0.6f, 0.4f };
+		EmissiveSphere.Roughness = 0.1f;
+		EmissiveSphere.EmissionColor = { 0.9f, 0.6f, 0.4f };
+		EmissiveSphere.EmissionStrength = 2.0f;
+
+		Material& SideSphere = m_Scene.Materials.emplace_back();
+		SideSphere.Albedo = { 0.8f, 0.3f, 0.2f };
+		SideSphere.Roughness = 0.0f;
+
+		Material& BackSphere = m_Scene.Materials.emplace_back();
+		BackSphere.Albedo = { 0.2f, 0.8f, 0.1f };
+		BackSphere.Roughness = 0.0f;
+
+		Sphere FloorSphere;
+		FloorSphere.Position = { 0.0f, -100.5f, 0.0f };
+		FloorSphere.Radius = 100.0f;
+		FloorSphere.MaterialIndex = 0;
+		m_Scene.Spheres.push_back(FloorSphere); 
+
 		Sphere sphere;
 		sphere.Position = { 0.0f, 0.0f, 0.0f };
 		sphere.Radius = 0.5f;
-		sphere.MaterialIndex = 0;
+		sphere.MaterialIndex = 1;
 		m_Scene.Spheres.push_back(sphere);
 
 		Sphere sphere2;
-		sphere2.Position = { 0.0f, -100.5f, 0.0f };
-		sphere2.Radius = 100.0f;
-		sphere2.MaterialIndex = 1;
+		sphere2.Position = { 2.0f, 0.49f, 0.0f };
+		sphere2.Radius = 1.0f;
+		sphere2.MaterialIndex = 2;
 		m_Scene.Spheres.push_back(sphere2);
+
+		Sphere sphere3;
+		sphere3.Position = { -2.0f, 0.49f, 1.0f };
+		sphere3.Radius = 1.0f;
+		sphere3.MaterialIndex = 3;
+		m_Scene.Spheres.push_back(sphere3);
+
+		Sphere sphere4;
+		sphere4.Position = {-1.5f, 0.31f, -6.0f };
+		sphere4.Radius = 1.0f;
+		sphere4.MaterialIndex = 4;
+		m_Scene.Spheres.push_back(sphere4);
 
 		Light light;
 		light.Position = { -1.0f, -1.0f, -1.0f };
@@ -76,15 +108,15 @@ public:
 		/* Object Controls */
 		ImGui::Text("Objects");
 		ImGui::Separator();
-		for (size_t i = 0; i < m_Scene.Spheres.size(); i++)
+		for (size_t i = 1; i < m_Scene.Spheres.size(); i++)
 		{
 			ImGui::PushID(i);
 			/* Sphere Position and Radius */
-			ImGui::DragFloat3("Position", glm::value_ptr(m_Scene.Spheres[i].Position), 0.1f);
-			ImGui::DragFloat("Radius", &m_Scene.Spheres[i].Radius, 0.1f, 0.0f, 500.0f);
+			if(ImGui::DragFloat3("Position", glm::value_ptr(m_Scene.Spheres[i].Position), 0.1f)) { m_Renderer.ResetFrameCount(); }
+			if(ImGui::DragFloat("Radius", &m_Scene.Spheres[i].Radius, 0.1f, 0.0f, 500.0f)) { m_Renderer.ResetFrameCount(); }
 
 			/* Material Index */
-			ImGui::DragInt("Material Select", &m_Scene.Spheres[i].MaterialIndex, 1.0f, 0.0f, (int)m_Scene.Materials.size() - 1);
+			if(ImGui::DragInt("Material Select", &m_Scene.Spheres[i].MaterialIndex, 1.0f, 0.0f, (int)m_Scene.Materials.size() - 1)) { m_Renderer.ResetFrameCount(); }
 
 			ImGui::Separator();
 			ImGui::PopID();
@@ -93,25 +125,29 @@ public:
 		/* Material Controls */
 		ImGui::Text("Materials");
 		ImGui::Separator();
-		for (size_t i = 0; i < m_Scene.Materials.size(); i++)
+		for (size_t i = 1; i < m_Scene.Materials.size(); i++)
 		{
 			ImGui::PushID(i);
 
 			/* Material Properties */
-			ImGui::ColorEdit3("Albedo", glm::value_ptr(m_Scene.Materials[i].Albedo), 0.1f);
-			ImGui::DragFloat("Roughness", &m_Scene.Materials[i].Roughness, 0.001f, 0.0f, 1.0f);
-			ImGui::DragFloat("Metallic", &m_Scene.Materials[i].Metallic, 0.001f, 0.0f, 1.0f);
+			if (ImGui::ColorEdit3("Albedo", glm::value_ptr(m_Scene.Materials[i].Albedo), 0.1f)) { m_Renderer.ResetFrameCount(); }
+			if(ImGui::DragFloat("Roughness", &m_Scene.Materials[i].Roughness, 0.001f, 0.0f, 1.0f)) { m_Renderer.ResetFrameCount(); }
+			if(ImGui::DragFloat("Metallic", &m_Scene.Materials[i].Metallic, 0.001f, 0.0f, 1.0f)) { m_Renderer.ResetFrameCount(); }
+			if(ImGui::ColorEdit3("Emission Color", glm::value_ptr(m_Scene.Materials[i].EmissionColor), 0.1f)) { m_Renderer.ResetFrameCount(); }
+			if(ImGui::DragFloat("Emission Strength", &m_Scene.Materials[i].EmissionStrength, 0.05f, 0.0f, FLT_MAX)) { m_Renderer.ResetFrameCount(); }
 
 			ImGui::Separator();
 			ImGui::PopID();
 		}
 
 		/* Light Source Movement */
+		/*
 		ImGui::Separator();
 		ImGui::Text("Light Position");
 		ImGui::Separator();
 
-		ImGui::DragFloat3("Light Source", glm::value_ptr(m_Scene.Lights[0].Position), 0.1f, -5.0f, 5.0f);
+		if(ImGui::DragFloat3("Light Source", glm::value_ptr(m_Scene.Lights[0].Position), 0.1f, -5.0f, 5.0f)) { m_Renderer.ResetFrameCount(); }
+		*/
 
 		ImGui::End();
 

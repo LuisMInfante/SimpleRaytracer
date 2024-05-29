@@ -20,6 +20,10 @@ struct Material
 	glm::vec3 Albedo{ 1.0f }; // Non-lit color (0 = darker, 1 = lighter)
 	float Roughness = 1.0f; // Glossiness (0 = mirror, 1 = matte)
 	float Metallic = 0.0f; // Reflectivity (0 = dielectric, 1 = metal)
+	glm::vec3 EmissionColor{ 0.0f }; // Self-illumination color
+	float EmissionStrength = 0.0f; // Self-illumination (0 = none, 1 = full)
+
+	glm::vec3 GetEmittingColor() const { return EmissionColor * EmissionStrength; }
 };
 
 struct Sphere

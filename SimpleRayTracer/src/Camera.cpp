@@ -133,9 +133,6 @@ void Camera::RecalculateRayDirections()
 			glm::vec2 coordinate = { (float)x / (float)m_ViewportWidth, (float)y / (float)m_ViewportHeight };
 			coordinate = coordinate * 2.0f - 1.0f; // Scale to [-1, 1]
 
-			// float aspectRatio = (float)m_FinalImage->GetWidth() / (float)m_FinalImage->GetHeight();
-			// coordinate.x *= aspectRatio; // Scale the x coordinate by the aspect ratio
-
 			glm::vec4 target = m_InverseProjection * glm::vec4(coordinate.x, coordinate.y, 1, 1);
 			glm::vec3 rayDirection = glm::vec3(m_InverseView * glm::vec4(glm::normalize(glm::vec3(target) / target.w), 0)); // World space
 			m_RayDirections[x + y * m_ViewportWidth] = rayDirection;

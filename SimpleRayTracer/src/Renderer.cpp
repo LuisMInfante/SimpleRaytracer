@@ -65,6 +65,8 @@ void Renderer::OnResize(uint32_t width, uint32_t height)
 	{
 		m_VerticalPixelIterator[i] = i;
 	}
+
+	ResetFrameCount();
 }
 
 void Renderer::Render(const Camera& camera, const Scene& scene)
@@ -159,7 +161,7 @@ glm::vec4 Renderer::RayGen(uint32_t x, uint32_t y)
 	glm::normalize(light.Position);
 
 	glm::vec3 litColor = { 0.0f, 0.0f, 0.0f };
-	float multiplier = 1.0f;
+	glm::vec3 throughput(1.0f);
 	int numBounces = 10;
 
 	for (int i = 0; i < numBounces; i++)
@@ -171,7 +173,7 @@ glm::vec4 Renderer::RayGen(uint32_t x, uint32_t y)
 		if (!hitEvent.Hit || hitEvent.HitDistance < 0)
 		{
 			glm::vec3 skyColor = { 0.6f, 0.7f, 0.9f };
-			litColor += skyColor * multiplier;
+			litColor += skyColor * throughput;
 			break;
 		}
 
@@ -180,17 +182,20 @@ glm::vec4 Renderer::RayGen(uint32_t x, uint32_t y)
 		const Material& material = m_CurrentScene->Materials[sphere.MaterialIndex];
 		glm::vec3 sphereColor = material.Albedo;
 
+		/*
 		// Calculate the light intensity and color
 		float lightIntensity = glm::max(glm::dot(hitEvent.WorldNormal, -light.Position), 0.0f); // Equiv to cos(theta)
 		sphereColor *= lightIntensity;
-		litColor += sphereColor * multiplier;
+		litColor += sphereColor * throughput * glm::vec3(0.5f, 0.5f, 0.5f);
+		*/
 
-		// Reduce multiplier for each bounce
-		multiplier *= 0.5f;
+		// Absorb color for each bounce
+		throughput *= material.Albedo;
+		litColor += material.GetEmittingColor();
 
 		// Calculate the new ray direction
 		ray.Origin = hitEvent.WorldPosition + hitEvent.WorldNormal * 0.001f;
-		ray.Direction = glm::reflect(ray.Direction, hitEvent.WorldNormal + material.Roughness * Walnut::Random::Vec3(-0.5f, 0.5f));
+		ray.Direction = glm::normalize(hitEvent.WorldNormal + Walnut::Random::InUnitSphere());
 	}
 
 	return glm::vec4(litColor, 1.0f);
