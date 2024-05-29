@@ -191,11 +191,22 @@ glm::vec4 Renderer::RayGen(uint32_t x, uint32_t y)
 
 		// Absorb color for each bounce
 		throughput *= material.Albedo;
-		litColor += material.GetEmittingColor();
+		litColor += material.GetEmittingColor() * throughput;
 
 		// Calculate the new ray direction
 		ray.Origin = hitEvent.WorldPosition + hitEvent.WorldNormal * 0.001f;
-		ray.Direction = glm::normalize(hitEvent.WorldNormal + Walnut::Random::InUnitSphere());
+
+		// Calculate Reflection
+		glm::vec3 reflectDirection = glm::reflect(ray.Direction, hitEvent.WorldNormal);
+		glm::vec3 randomDirection = glm::normalize(hitEvent.WorldNormal + Walnut::Random::InUnitSphere());
+
+		// Mix reflection and random direction based on roughness
+		ray.Direction = glm::normalize(glm::mix(reflectDirection, randomDirection, material.Roughness));
+
+		// Mix reflected color based on metallic value
+		throughput *= glm::mix(glm::vec3(1.0f), material.Albedo, material.Metallic);
+
+
 	}
 
 	return glm::vec4(litColor, 1.0f);

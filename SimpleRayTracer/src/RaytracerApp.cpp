@@ -19,8 +19,9 @@ public:
 		: m_Camera(45.0f, 0.1f, 100.0f) 
 	{
 		Material& ground = m_Scene.Materials.emplace_back();
-		ground.Albedo = { 0.1f, 0.1f, 0.1f };
-		ground.Roughness = 0.1f;
+		ground.Albedo = { 0.2f, 0.2f, 0.2f };
+		ground.Roughness = 0.5f;
+		ground.Metallic = 0.0f;
 
 		Material& floatingSphere = m_Scene.Materials.emplace_back();
 		floatingSphere.Albedo = { 0.2f, 0.55f, 0.6f };
