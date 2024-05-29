@@ -29,6 +29,42 @@ namespace Utility
 
 		return glm::vec4(red, green, blue, alpha);
 	}
+
+	/*
+	*					PCG Hash Function
+	*		* https://jcgt.org/published/0009/03/02/
+	*       * https://www.reedbeta.com/blog/hash-functions-for-gpu-rendering/
+	*/
+
+	static uint32_t pcg_hash(uint32_t input)
+	{
+		uint32_t state = input * 747796405u + 2891336453u;
+		uint32_t word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+		return (word >> 22u) ^ word;
+	}
+
+	static float RandomFloat(uint32_t& seed)
+	{
+		seed = pcg_hash(seed);
+		const uint32_t mantissa_mask = (1 << 23) - 1; // 23 bits for mantissa
+		uint32_t mantissa_bits = seed & mantissa_mask; // Extract mantissa bits from the seed
+		const uint32_t one_as_int = 127 << 23; // 1.0 in IEEE 754 as an integer
+
+		uint32_t random_bits = (mantissa_bits | one_as_int); // Combine the mantissa bits with the exponent for 1.0f
+		float random_float;
+		memcpy(&random_float, &random_bits, sizeof(random_float)); // Convert the integer to a float
+
+		return random_float - 1.0f; // Get a random float in the range [0, 1]
+	}
+
+	static glm::vec3 RandomInUnitSphere(uint32_t& seed)
+	{
+		return glm::normalize(glm::vec3(
+			RandomFloat(seed) * 2.0f - 1.0f, 
+			RandomFloat(seed) * 2.0f - 1.0f, 
+			RandomFloat(seed) * 2.0f - 1.0f)
+		);
+	}
 }
 
 void Renderer::OnResize(uint32_t width, uint32_t height)
@@ -164,8 +200,12 @@ glm::vec4 Renderer::RayGen(uint32_t x, uint32_t y)
 	glm::vec3 throughput(1.0f);
 	int numBounces = 10;
 
+	uint32_t seed = x + y * m_FinalImage->GetWidth() * m_FrameCount;
+
 	for (int i = 0; i < numBounces; i++)
 	{
+		seed += i;
+
 		// Trace the ray
 		Renderer::HitEvent hitEvent = TraceRay(ray);
 
@@ -198,7 +238,16 @@ glm::vec4 Renderer::RayGen(uint32_t x, uint32_t y)
 
 		// Calculate Reflection
 		glm::vec3 reflectDirection = glm::reflect(ray.Direction, hitEvent.WorldNormal);
-		glm::vec3 randomDirection = glm::normalize(hitEvent.WorldNormal + Walnut::Random::InUnitSphere());
+		glm::vec3 randomDirection; 
+
+		if (m_Settings.FastRandom)
+		{
+			randomDirection = glm::normalize(hitEvent.WorldNormal + Utility::RandomInUnitSphere(seed));
+		}
+		else
+		{
+			randomDirection = glm::normalize(hitEvent.WorldNormal + Walnut::Random::InUnitSphere());
+		}
 
 		// Mix reflection and random direction based on roughness
 		ray.Direction = glm::normalize(glm::mix(reflectDirection, randomDirection, material.Roughness));

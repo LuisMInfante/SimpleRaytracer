@@ -24,6 +24,7 @@ public:
 		struct Settings
 		{
 			bool Accumulate = true;
+			bool FastRandom = true;
 		};
 		Settings& GetSettings() { return m_Settings; }
 

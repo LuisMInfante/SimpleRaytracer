@@ -95,6 +95,7 @@ public:
 
 		/* Accumulation */
 		ImGui::Checkbox("Accumulate", &m_Renderer.GetSettings().Accumulate);
+		ImGui::Checkbox("Fast Random", &m_Renderer.GetSettings().FastRandom);
 
 		if (ImGui::Button("Reset"))
 		{
