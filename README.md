@@ -16,3 +16,8 @@ Hold `Right Click` to control Camera.
 | D   | Right  |
 | Q   | Up |
 | E   | Down |
+
+# Current Renders
+![image](https://github.com/LuisMInfante/SimpleRaytracer/assets/113048160/4db889b8-af37-4365-8b04-0f1c0c578d72)
+
+![image](https://github.com/LuisMInfante/SimpleRaytracer/assets/113048160/00add0f4-7eed-40c1-bbc2-949f3e533e9e)
