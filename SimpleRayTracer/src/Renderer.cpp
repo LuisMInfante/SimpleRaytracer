@@ -255,7 +255,6 @@ glm::vec4 Renderer::RayGen(uint32_t x, uint32_t y)
 		// Mix reflected color based on metallic value
 		throughput *= glm::mix(glm::vec3(1.0f), material.Albedo, material.Metallic);
 
-
 	}
 
 	return glm::vec4(litColor, 1.0f);

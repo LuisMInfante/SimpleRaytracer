@@ -25,21 +25,23 @@ public:
 
 		Material& floatingSphere = m_Scene.Materials.emplace_back();
 		floatingSphere.Albedo = { 0.2f, 0.55f, 0.6f };
-		floatingSphere.Roughness = 0.0f;
+		floatingSphere.Roughness = 0.2f;
+		floatingSphere.Metallic = 1.0f;
 
 		Material& EmissiveSphere = m_Scene.Materials.emplace_back();
 		EmissiveSphere.Albedo = { 0.9f, 0.6f, 0.4f };
 		EmissiveSphere.Roughness = 0.1f;
 		EmissiveSphere.EmissionColor = { 0.9f, 0.6f, 0.4f };
-		EmissiveSphere.EmissionStrength = 2.0f;
+		EmissiveSphere.EmissionStrength = 6.0f;
 
 		Material& SideSphere = m_Scene.Materials.emplace_back();
 		SideSphere.Albedo = { 0.8f, 0.3f, 0.2f };
-		SideSphere.Roughness = 0.0f;
+		SideSphere.Roughness = 0.28f;
+		SideSphere.Metallic = 1.0f;
 
 		Material& BackSphere = m_Scene.Materials.emplace_back();
 		BackSphere.Albedo = { 0.2f, 0.8f, 0.1f };
-		BackSphere.Roughness = 0.0f;
+		BackSphere.Roughness = 1.0f;
 
 		Sphere FloorSphere;
 		FloorSphere.Position = { 0.0f, -100.5f, 0.0f };
@@ -54,7 +56,7 @@ public:
 		m_Scene.Spheres.push_back(sphere);
 
 		Sphere sphere2;
-		sphere2.Position = { 2.0f, 0.49f, 0.0f };
+		sphere2.Position = { 2.0f, 2.5f, 0.0f };
 		sphere2.Radius = 1.0f;
 		sphere2.MaterialIndex = 2;
 		m_Scene.Spheres.push_back(sphere2);
